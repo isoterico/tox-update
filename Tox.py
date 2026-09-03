@@ -21,7 +21,7 @@ from telethon.tl.functions.channels import InviteToChannelRequest
 # CONFIGURAZIONE STRUTTURA E VERSIONING
 VERSIONE_LOCALE = "1.3.0"
 # Sostituisci questo URL con l'indirizzo reale del tuo server (es. un link RAW di GitHub o Pastebin)
-URL_SERVER_CHECK = "https://157.173.102.133/Tox.py"
+URL_SERVER_CHECK = "https://raw.githubusercontent.com/isoterico/tox-update/refs/heads/main/update.json"
 
 SESSIONS_DIR = "sessions_data"
 LOG_ELABORATI = "elaborati.txt"
