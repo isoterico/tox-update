@@ -2,6 +2,6 @@
   "versione_corrente": "1.3.0",
   "blocco_obbligatorio": true,
   "stato_servizio": "attivo",
-  "url_aggiornamento": "https://githubusercontent.com",
+  "url_aggiornamento": "https://raw.githubusercontent.com/isoterico/tox-update/refs/heads/main/update.json",
   "messaggio": "Installazione aggiornamento automatico v1.3.0..."
 }
