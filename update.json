@@ -2,6 +2,6 @@
   "versione_corrente": "1.4.0",
   "blocco_obbligatorio": true,
   "stato_servizio": "attivo",
-  "url_aggiornamento": "https://raw.githubusercontent.com/isoterico/tox-update/refs/heads/main/Tox.py ",
+  "url_aggiornamento": "https://github.com/isoterico/tox-update/blob/main/Tox.py",
   "messaggio": "Installazione aggiornamento automatico v1.4.0..."
 }
