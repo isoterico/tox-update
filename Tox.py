@@ -20,7 +20,7 @@ from telethon.tl.functions.channels import InviteToChannelRequest
 
 # CONFIGURAZIONE STRUTTURA E VERSIONING
 # CONFIGURAZIONE STRUTTURA E VERSIONING
-VERSIONE_LOCALE = "1.3.3"  # Lascialo a 1.2.0 per fare il test, poi rimettilo a 1.3.0
+VERSIONE_LOCALE = "1.4.0"  # Lascialo a 1.2.0 per fare il test, poi rimettilo a 1.3.0
 URL_SERVER_CHECK = "https://raw.githubusercontent.com/isoterico/tox-update/refs/heads/main/update.json"
 
 SESSIONS_DIR = "sessions_data"
