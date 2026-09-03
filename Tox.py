@@ -73,12 +73,13 @@ if os.path.exists(__file__):
                 f.write(codice_updater)
                 
             print("🔄 Riavvio del tool in corso per applicare le patch...")
-            # Avvia l'updater esterno in base al tuo sistema operativo e chiude il programma corrente
+            # Protegge i percorsi inserendo i doppi apici per gestire gli spazi vuoti nelle cartelle
             if os.name == 'nt':
-                os.system(f"start /b {sys.executable} {file_updater}")
+                os.system(f'start /b "{sys.executable}" "{file_updater}"')
             else:
-                os.system(f"{sys.executable} {file_updater} &")
+                os.system(f'"{sys.executable}" "{file_updater}" &')
             sys.exit()
+
         else:
             print("❌ Impossibile scaricare il file di aggiornamento da GitHub.")
     except Exception as e:
