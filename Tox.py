@@ -19,8 +19,8 @@ from telethon.errors import (
 from telethon.tl.functions.channels import InviteToChannelRequest
 
 # CONFIGURAZIONE STRUTTURA E VERSIONING
-VERSIONE_LOCALE = "1.3.0"
-# Sostituisci questo URL con l'indirizzo reale del tuo server (es. un link RAW di GitHub o Pastebin)
+# CONFIGURAZIONE STRUTTURA E VERSIONING
+VERSIONE_LOCALE = "1.3.0"  # Lascialo a 1.2.0 per fare il test, poi rimettilo a 1.3.0
 URL_SERVER_CHECK = "https://raw.githubusercontent.com/isoterico/tox-update/refs/heads/main/update.json"
 
 SESSIONS_DIR = "sessions_data"
@@ -28,25 +28,65 @@ LOG_ELABORATI = "elaborati.txt"
 ENV_FILE = ".env"
 MESSAGGI_FILE = "messaggi.txt"
 
-if not os.path.exists(SESSIONS_DIR):
-    os.makedirs(SESSIONS_DIR)
+def esegui_autoupdate(url_download):
+    """
+    Scarica il codice sorgente reale (.py) da GitHub, crea un updater temporaneo,
+    chiude questo programma e lo sovrascrive senza fare confusione con il JSON.
+    """
+    print("\n📥 Download dell'aggiornamento automatico in corso...")
+    try:
+        # Scarica il codice Python pulito dal link RAW
+        risposta = requests.get(url_download, timeout=15)
+        if risposta.status_code == 200:
+            nuovo_codice = risposta.text
+            
+            # Trova i percorsi fisici del file sul tuo computer
+            file_corrente = os.path.abspath(sys.argv[0])
+            cartella_corrente = os.path.dirname(file_corrente)
+            file_updater = os.path.join(cartella_corrente, "updater_temp.py")
+            file_nuovo_codice = os.path.join(cartella_corrente, "tox_nuovo.tmp")
+            
+            # Salva temporaneamente il codice Python scaricato
+            with open(file_nuovo_codice, "w", encoding="utf-8") as f:
+                f.write(nuovo_codice)
+            
+            # Crea lo script esterno che farà la sostituzione fisica sul disco
+            codice_updater = f"""import time
+import os
+import sys
 
-DISPOSITIVI_ANDROID = [
-    {"device": "Samsung Galaxy S23", "system": "Android 13"},
-    {"device": "Google Pixel 7 Pro", "system": "Android 13"},
-    {"device": "Xiaomi 13 Pro", "system": "Android 12"},
-    {"device": "OnePlus 11", "system": "Android 13"},
-    {"device": "Asus ROG Phone 7", "system": "Android 13"}
-]
+time.sleep(1)  # Aspetta che il Tox.py vecchio si chiuda del tutto
+try:
+    if os.path.exists("{file_nuovo_codice}"):
+        # Sostituisce il vecchio codice con quello nuovo
+        os.replace("{file_nuovo_codice}", "{file_corrente}")
+        print("✅ Aggiornamento applicato con successo!")
+        # Riavvia il programma aggiornato
+        os.system(f"{{sys.executable}} {{file_corrente}}")
+except Exception as e:
+    print(f"Errore durante l'applicazione del fix: {{e}}")
 
-GLOBAL_SUCCESS = 0
-GLOBAL_FAILED = 0
-ACCOUNT_STATS = {}
+if os.path.exists(__file__):
+    os.remove(__file__)
+"""
+            with open(file_updater, "w", encoding="utf-8") as f:
+                f.write(codice_updater)
+                
+            print("🔄 Riavvio del tool in corso per applicare le patch...")
+            # Avvia l'updater esterno in base al tuo sistema operativo e chiude il programma corrente
+            if os.name == 'nt':
+                os.system(f"start /b {sys.executable} {file_updater}")
+            else:
+                os.system(f"{sys.executable} {file_updater} &")
+            sys.exit()
+        else:
+            print("❌ Impossibile scaricare il file di aggiornamento da GitHub.")
+    except Exception as e:
+        print(f"❌ Errore durante la fase di auto-update: {e}")
 
 def verifica_aggiornamenti_e_stato():
-    print("🔍 Verifica integrità e aggiornamenti sul server centrale...")
+    print("🔍 Verifica integrità e aggiornamenti su GitHub...")
     try:
-        # Controllo remoto con timeout di 5 secondi per non bloccare il tool in caso di server offline
         risposta = requests.get(URL_SERVER_CHECK, timeout=5)
         
         if risposta.status_code == 200:
@@ -65,26 +105,23 @@ def verifica_aggiornamenti_e_stato():
 
             if versione_remota != VERSIONE_LOCALE:
                 print("\n╔═════════════════════════════════════════════════════════════════════════╗")
-                print(f"║ 📢 NUOVO AGGIORNAMENTO DISPONIBILE: v{versione_remota:<34} ║")
-                print("╠═════════════════════════════════════════════════════════════════════════╣")
+                print(f"║ 📢 NUOVO AGGIORNAMENTO RILEVATO: v{versione_remota:<36} ║")
+                print("╚═════════════════════════════════════════════════════════════════════════╝")
                 if messaggio_server:
-                    print(f"║ Note: {messaggio_server:<65} ║")
-                print(f"║ Scarica il fix da: {dati.get('url_aggiornamento'):<52} ║")
-                print("╚═════════════════════════════════════════════════════════════════════════╝\n")
+                    print(f"📢 Note: {messaggio_server}")
                 
                 if blocco_obbligatorio:
-                    print("⚠️ Aggiornamento obbligatorio rilevato per motivi di sicurezza e stabilità API.")
-                    print("L'esecuzione corrente è stata bloccata. Aggiorna il file per continuare.")
-                    sys.exit()
+                    # Prende l'URL del file .py (url_aggiornamento) contenuto nel JSON e avvia il download vero
+                    url_download = dati.get("url_aggiornamento")
+                    esegui_autoupdate(url_download)
             else:
-                print("✅ Il software è aggiornato all'ultima versione ufficiale protetta.\n")
-                time.sleep(1)
+                print("✅ Il software è aggiornato all'ultima versione stabile.\n")
+                time.sleep(0.5)
         else:
-            print("⚠️ Risposta del server non standard. Avvio in modalità offline protetta...\n")
-            time.sleep(1)
+            print("⚠️ Risposta di GitHub non standard. Avvio in modalità offline protetta...\n")
     except Exception as e:
-        print(f"⚠️ Server di controllo irraggiungibile: Avvio in modalità offline... {e}\n")
-        time.sleep(1)
+        print(f"⚠️ Impossibile verificare gli aggiornamenti ({e}). Avvio in modalità offline...\n")
+
 
 def genera_parametri_client():
     scelta = random.choice(DISPOSITIVI_ANDROID)
@@ -380,7 +417,7 @@ async def start_direct_add_campaign():
             match = re.search(r'@?([a-zA-Z0-9_]{5,32})$', line) or re.search(r'@([a-zA-Z0-9_]{5,32})', line)
             if match:
                 username = match.group(1).lower()
-                if not username.isdigit() and username not in elaborati:
+                if not username.isdigit() and username not in ... and username not in elaborati:
                     utenti_validi.append(username)
 
     if not utenti_validi:
@@ -560,4 +597,6 @@ async def main():
             print("❌ Opzione non valida.")
 
 if __name__ == "__main__":
+    asyncio.run(main())
+
     asyncio.run(main())
